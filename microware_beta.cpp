@@ -17,6 +17,20 @@ sem_t mutex2;
 
 int test_raj;
 
+/// ------- DECLARAÇÕES --------------
+void mostrar_fila();
+void ir_comer(personagem people);
+void remove_personagem();
+int raj_escolhe_verifica();
+int raj_escolhe_verifica();
+void* raj (void* arg);
+void sort_decrescente(personagens fila);
+void sort_crescente(personagens fila);
+void* micro_ondas(void* arg);
+void add_personagem();
+/// -----------------------------------
+
+
 struct personagem{
     string Nome;
     // este personagem não tem preferência em relação a estes de baixo
@@ -111,13 +125,13 @@ void sort_decrescente(personagens fila){
     sem_wait(&raj_ver);
     test_raj = 1;
     sem_post(&raj_ver);
-	personagem aux;
-	bool houveTroca = true;
-	int p,e;
-		p = fila.tam - 1;
-		while(p > 0){
-			e = p - 1;
-			while(e >= 0){
+    personagem aux;
+    bool houveTroca = true;
+    int p,e;
+        p = fila.tam - 1;
+        while(p > 0){
+            e = p - 1;
+            while(e >= 0){
                 if (test_raj == 0){
                     sem_wait(&raj_ver);
                     if(raj_escolhe_verifica() == 1){
@@ -125,7 +139,7 @@ void sort_decrescente(personagens fila){
                         break;
                     } else sem_post(&raj_ver);
                 }
-				if(fila.fila[p].depoisDele == fila.fila[e].Nome || fila.fila[p].depoisDela == fila.fila[e].Nome)
+                if(fila.fila[p].depoisDele == fila.fila[e].Nome || fila.fila[p].depoisDela == fila.fila[e].Nome)
                 {
                     aux = fila.fila[p];
                     fila.fila[p] = fila.fila[e];
@@ -135,26 +149,26 @@ void sort_decrescente(personagens fila){
                     e = p - 1;
                 }
                 else{
-                	cout << fila.fila[p].Nome << " NAO TROCOU COM " << fila.fila[e].Nome << endl;
-                	e--; 
+                    cout << fila.fila[p].Nome << " NAO TROCOU COM " << fila.fila[e].Nome << endl;
+                    e--; 
                 }
-			}
-			p--;
-		}
+            }
+            p--;
+        }
 
     mostrar_fila();
 }
 
 void sort_crescente(personagens fila){
-	personagem aux;
-	bool houveTroca = true;
-	int p,e;
-		p = 0;
-		while(p < fila.tam - 1){
-			e = 1;
-			while(e < fila.tam){
+    personagem aux;
+    bool houveTroca = true;
+    int p,e;
+        p = 0;
+        while(p < fila.tam - 1){
+            e = 1;
+            while(e < fila.tam){
 
-				if(fila.fila[p].depoisDele == fila.fila[e].Nome || fila.fila[p].depoisDela == fila.fila[e].Nome)
+                if(fila.fila[p].depoisDele == fila.fila[e].Nome || fila.fila[p].depoisDela == fila.fila[e].Nome)
                 {
                     aux = fila.fila[p];
                     fila.fila[p] = fila.fila[e];
@@ -164,14 +178,14 @@ void sort_crescente(personagens fila){
                     e = p + 1;
                 }
                 else{
-                	cout << fila.fila[p].Nome << " NAO TROCOU COM " << fila.fila[e].Nome << endl;
-                	e++; 
+                    cout << fila.fila[p].Nome << " NAO TROCOU COM " << fila.fila[e].Nome << endl;
+                    e++; 
                 }
-			}
-			p++;
-		}
+            }
+            p++;
+        }
     for(int i = 0; i < fila.tam; i++)
-	    cout << fila.fila[i].Nome << endl;
+        cout << fila.fila[i].Nome << endl;
 
 }
 
@@ -257,11 +271,7 @@ int main()
         remove_personagem();
         return 1;
     } else return 0;
-
 }
-
-
-
 void raj (){
     while (1){
         if(raj_ver == 1){
