@@ -1,17 +1,18 @@
-#include <iostream>
-#include <unistd.h>
+#include<iostream>
+#include<unistd.h>
 #include<pthread.h>
 #include<semaphore.h>
+#include<time.h>
 
 
 using namespace std;
-#define TAM 7
 #define TRUE 1
 #define VAZIO "vazio"
 
 sem_t mutex;
 sem_t micro;
 sem_t peoples;
+sem_t mutex2;
 
 
 
@@ -24,11 +25,12 @@ struct personagem{
 };
 
 struct personagens{
-    personagem fila[7];
+    personagem fila[6];
     int tam;
 };
 
 personagens fila;
+int disp[6];
 
 personagem elenco[6] = {{"Sheldon", "Leonard", "Penny"},
                         {"Amy", "Leonard", "Penny"},
@@ -37,6 +39,23 @@ personagem elenco[6] = {{"Sheldon", "Leonard", "Penny"},
                         {"Howard", "Sheldon", "Amy"},
                         {"Bernadette", "Sheldon", "Amy"},
                         };
+
+void ir_comer(personagem people){
+    srand(time(0));
+    int valor_rand;
+    valor_rand = rand()%(6-3+1)+3;
+    cout << people.Nome << " vai comer " << endl;
+    sleep(valor_rand);
+    for(int i = 0; i < 6; i++){
+        if(elenco[i].Nome == people.Nome){
+            sem_wait(&mutex2);
+            disp[i] = 0;
+            sem_post(&mutex2);
+            break;
+        }
+    }
+
+}
 
 // o while foi para ter maior controle na hora de interar, ta bem autoexplicativo, se trocar ele volta do inicio dos próximos de p 
 // quando não troca, ele pode continuar, se vc achar um jeito de fazer isso só com for, nem me fala pq eu vou ficar com raiva de mim kkkkkkk
@@ -105,28 +124,46 @@ void sort_crescente(personagens fila){
 
 
 void* micro_ondas(void* arg){
-    string nome_aux;
+    personagem aux;
     while(1){
         if (fila.tam != 0){
-            //printf("Função micro ondas entrou!----------------\n");
             sem_wait(&mutex);
-            cout << fila.fila[fila.tam-1].Nome << " começa a esquentar algo:" << fila.tam-1 << endl;
+            cout << fila.fila[fila.tam-1].Nome << " começa a esquentar algo" << endl;
             fila.tam -= 1;
-            nome_aux = fila.fila[fila.tam].Nome;
+            aux = fila.fila[fila.tam];
+            sleep(1);
+            sem_wait(&peoples);
             sem_post(&mutex);
-            cout << nome_aux << " vai comer "<< endl;
+            // indo comer
+            ir_comer(aux);
         }
     }
     pthread_exit(NULL);
 }
 
-void add_personagem(personagem people){
-    cout << people.Nome << " quer usar o forno" << endl;
-    sem_wait(&mutex);
-    fila.fila[fila.tam++] = people;
-    sem_post(&peoples);
-    sem_post(&mutex);
+void add_personagem(){
+    srand(time(0));
+    int valor_rand;
+    while(1){
+        valor_rand = rand()%6;
+        if(disp[valor_rand] == 0){
+
+            cout << elenco[valor_rand].Nome << " quer usar o forno" << endl;
+            sem_wait(&mutex);
+            sem_wait(&mutex2);
+            disp[valor_rand] = 1;
+            sem_post(&mutex2);
+            fila.fila[fila.tam++] = elenco[valor_rand];
+            sem_post(&peoples);
+            sem_post(&mutex);
+            break;
+        }
+    }
+
+
 }
+
+
 
 int main()
 {
@@ -134,14 +171,19 @@ int main()
 
     sem_init(&peoples, TRUE, 0);
     sem_init(&mutex, TRUE, 1);
+    sem_init(&mutex2, TRUE, 1);
 
     pthread_t m;
 
-    // TESTE MANUAL
+    pthread_create(&m, NULL, micro_ondas, NULL);
+
+    /*// TESTE MANUAL
     // ---------------------------------------
-    add_personagem(elenco[4]);
-    add_personagem(elenco[0]);
-    add_personagem(elenco[1]);
+    
+    add_personagem();
+    add_personagem();
+    add_personagem();
+    
 
     sem_wait(&mutex);
     sort_decrescente(fila);
@@ -150,25 +192,27 @@ int main()
 
 
 
-    pthread_create(&m, NULL, micro_ondas, NULL);
+    
 
 
 
     // TESTE 2, APOS O INICIO DA THREAD
     // -----------------------------------------
-    sleep(4);
-    
-    add_personagem(elenco[2]);
-    add_personagem(elenco[3]);
-    add_personagem(elenco[5]);
-
+    //sleep(4);
+    add_personagem();
+    add_personagem();
+    add_personagem();
     sem_wait(&mutex);
     sort_decrescente(fila);
     sem_post(&mutex);
-    // -----------------------------------------
+    // -----------------------------------------*/
+
+    while(1){
+        add_personagem();
+    }
 
 
-    sleep(5);
+    sleep(50);
     if (fila.tam == 0)
         printf("Fim de teste: A fila esta vazia!\n");
     else{
