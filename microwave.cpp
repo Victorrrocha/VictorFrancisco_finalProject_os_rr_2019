@@ -23,7 +23,12 @@ struct personagem{
     string depoisDela;
 };
 
-personagem fila[7];
+struct personagens{
+    personagem fila[7];
+    int tam;
+};
+
+personagens fila;
 
 personagem elenco[6] = {{"Sheldon", "Leonard", "Penny"},
                         {"Amy", "Leonard", "Penny"},
@@ -36,110 +41,91 @@ personagem elenco[6] = {{"Sheldon", "Leonard", "Penny"},
 // o while foi para ter maior controle na hora de interar, ta bem autoexplicativo, se trocar ele volta do inicio dos próximos de p 
 // quando não troca, ele pode continuar, se vc achar um jeito de fazer isso só com for, nem me fala pq eu vou ficar com raiva de mim kkkkkkk
                         
-void sort_decrescente(personagem *fila, int tam){
+void sort_decrescente(personagens fila){
 	personagem aux;
 	bool houveTroca = true;
 	int p,e;
-		p = tam - 1;
+		p = fila.tam - 1;
 		while(p > 0){
 			e = p - 1;
 			while(e >= 0){
 
-				if(fila[p].depoisDele == fila[e].Nome || fila[p].depoisDela == fila[e].Nome)
+				if(fila.fila[p].depoisDele == fila.fila[e].Nome || fila.fila[p].depoisDela == fila.fila[e].Nome)
                 {
-                    aux = fila[p];
-                    fila[p] = fila[e];
-                    fila[e] = aux;
+                    aux = fila.fila[p];
+                    fila.fila[p] = fila.fila[e];
+                    fila.fila[e] = aux;
                     houveTroca = true;
-                    cout << fila[p].Nome << " TROCOU COM " << fila[e].Nome << endl;
+                    cout << fila.fila[p].Nome << " TROCOU COM " << fila.fila[e].Nome << endl;
                     e = p - 1;
                 }
                 else{
-                	cout << fila[p].Nome << " NAO TROCOU COM " << fila[e].Nome << endl;
+                	cout << fila.fila[p].Nome << " NAO TROCOU COM " << fila.fila[e].Nome << endl;
                 	e--; 
                 }
 			}
 			p--;
 		}
 
-	cout << fila[0].Nome << endl;
-    cout << fila[1].Nome << endl;
-    cout << fila[2].Nome << endl;
-    cout << fila[3].Nome << endl;
-    cout << fila[4].Nome << endl;
-    cout << fila[5].Nome << endl;
-
+    for(int i = 0; i < fila.tam; i++){
+	    cout << fila.fila[i].Nome << endl;
+    }
 }
 
-void sort_crescente(personagem *fila, int tam){
+void sort_crescente(personagens fila){
 	personagem aux;
 	bool houveTroca = true;
 	int p,e;
 		p = 0;
-		while(p < tam - 1){
+		while(p < fila.tam - 1){
 			e = 1;
-			while(e < tam){
+			while(e < fila.tam){
 
-				if(fila[p].depoisDele == fila[e].Nome || fila[p].depoisDela == fila[e].Nome)
+				if(fila.fila[p].depoisDele == fila.fila[e].Nome || fila.fila[p].depoisDela == fila.fila[e].Nome)
                 {
-                    aux = fila[p];
-                    fila[p] = fila[e];
-                    fila[e] = aux;
+                    aux = fila.fila[p];
+                    fila.fila[p] = fila.fila[e];
+                    fila.fila[e] = aux;
                     houveTroca = true;
-                    cout << fila[p].Nome << " TROCOU COM " << fila[e].Nome << endl;
+                    cout << fila.fila[p].Nome << " TROCOU COM " << fila.fila[e].Nome << endl;
                     e = p + 1;
                 }
                 else{
-                	cout << fila[p].Nome << " NAO TROCOU COM " << fila[e].Nome << endl;
+                	cout << fila.fila[p].Nome << " NAO TROCOU COM " << fila.fila[e].Nome << endl;
                 	e++; 
                 }
 			}
 			p++;
 		}
-
-	cout << fila[0].Nome << endl;
-    cout << fila[1].Nome << endl;
-    cout << fila[2].Nome << endl;
-    //cout << fila[3].Nome << endl;
-    //cout << fila[4].Nome << endl;
-    //cout << fila[5].Nome << endl;
+    for(int i = 0; i < fila.tam; i++)
+	    cout << fila.fila[i].Nome << endl;
 
 }
 
 
-// VARIAVEL "count" APENAS PARA TESTE, JA QUE O CORRETO 
-// GERARIA UM LOOP INFINITO, SENDO INVIAVEL VIZUALIZAÇÃO
-int count = 10;/* */
 
 void* micro_ondas(void* arg){
+    string nome_aux;
     while(1){
-        sem_wait(&peoples);
-        
-        printf("Função micro ondas entrou!----------------\n");
-        for(int i = 0; i < TAM; i++){
+        if (fila.tam != 0){
+            //printf("Função micro ondas entrou!----------------\n");
             sem_wait(&mutex);
-            if(fila[i].Nome != VAZIO && fila[i+1].Nome == VAZIO){
-                cout << fila[i].Nome << " Usando micro ondas! :" << i << endl;
-                fila[i].Nome = VAZIO;
-                fila[i].depoisDele = VAZIO;
-                fila[i].depoisDela = VAZIO;
-                sem_post(&mutex);
-                i = 1000;
-            }else if(fila[i].Nome == VAZIO) {sem_post(&mutex); i = 1000;}
-            else sem_post(&mutex);
+            cout << fila.fila[fila.tam-1].Nome << " começa a esquentar algo:" << fila.tam-1 << endl;
+            fila.tam -= 1;
+            nome_aux = fila.fila[fila.tam].Nome;
+            sem_post(&mutex);
+            cout << nome_aux << " vai comer "<< endl;
         }
     }
     pthread_exit(NULL);
 }
-    
 
-
-void iniciar_fila(){
-    for(int i = 0; i < TAM; i++){
-        fila[i].Nome = VAZIO;
-        fila[i].depoisDele = VAZIO;
-        fila[i].depoisDela = VAZIO;
-    }
+void add_personagem(personagem people){
+    cout << people.Nome << " quer usar o forno" << endl;
+    sem_wait(&mutex);
+    fila.fila[fila.tam++] = people;
+    sem_post(&peoples);
+    sem_post(&mutex);
 }
 
 int main()
@@ -153,17 +139,12 @@ int main()
 
     // TESTE MANUAL
     // ---------------------------------------
+    add_personagem(elenco[4]);
+    add_personagem(elenco[0]);
+    add_personagem(elenco[1]);
+
     sem_wait(&mutex);
-    iniciar_fila();
-
-    fila[0] = elenco[4];
-    fila[1] = elenco[0];
-    fila[2] = elenco[1];
-    sem_post(&peoples);
-    sem_post(&peoples);
-    sem_post(&peoples);
-
-    sort_decrescente(fila, tam);
+    sort_decrescente(fila);
     sem_post(&mutex);
     // -----------------------------------------
 
@@ -175,23 +156,26 @@ int main()
 
     // TESTE 2, APOS O INICIO DA THREAD
     // -----------------------------------------
-    sleep(2);
+    sleep(4);
+    
+    add_personagem(elenco[2]);
+    add_personagem(elenco[3]);
+    add_personagem(elenco[5]);
+
     sem_wait(&mutex);
-    fila[0] = elenco[2];
-    fila[1] = elenco[3];
-    fila[2] = elenco[5];
-    sem_post(&peoples);
-    sem_post(&peoples);
-    sem_post(&peoples);
-    sort_decrescente(fila, tam);
+    sort_decrescente(fila);
     sem_post(&mutex);
     // -----------------------------------------
 
 
-    sleep(2);
-    sem_wait(&mutex);
-    cout << "Ultimo da fila: "<< fila[0].Nome << "  :Fim de teste "<< endl;
-    sem_post(&mutex);
+    sleep(5);
+    if (fila.tam == 0)
+        printf("Fim de teste: A fila esta vazia!\n");
+    else{
+        sem_wait(&mutex);
+        cout << "Fim de test: "<< fila.fila[fila.tam].Nome << " é o proximo da fila.\n "<< endl;
+        sem_post(&mutex);
+    }
 
     while(1){};
 
