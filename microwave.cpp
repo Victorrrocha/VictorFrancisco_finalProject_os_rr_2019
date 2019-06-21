@@ -148,9 +148,9 @@ void add_personagem(){
         valor_rand = rand()%6;
         if(disp[valor_rand] == 0){
 
-            cout << elenco[valor_rand].Nome << " quer usar o forno" << endl;
             sem_wait(&mutex);
             sem_wait(&mutex2);
+	    cout << elenco[valor_rand].Nome << " quer usar o forno" << endl;
             disp[valor_rand] = 1;
             sem_post(&mutex2);
             fila.fila[fila.tam++] = elenco[valor_rand];
