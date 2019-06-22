@@ -53,12 +53,29 @@ void add_personagem();
 void ir_comer(personagem people);
 /// -----------------------------------
 
+
+
+/* RECEBE UM PERSONAGEM QUE ACABOU DE USAR O MICROWAVE
+   E ESPERA UM TEMPO ALEATORIO ENTRE(3-6) SEGUNDOS,
+   DEPOIS O PERSONAGEM FICA DISPONIVEL PARA ENTRAR 
+   NA FILA NOVAMENTE
+*/
 void ir_comer(personagem people){
-    srand(time(0));
+
+    
+    // 'valor_rand' RECEBE UM VALOR ALEATORIO ENTRE(3-6)
     int valor_rand;
+    srand(time(0));
     valor_rand = rand()%(6-3+1)+3;
+
+
     cout << people.Nome << " vai comer " << endl;
+
+    // OCORRE UM PAUSA EM SEGUNDOS DO TAMANHO DO 'valor_rand'
     sleep(valor_rand);
+
+
+    // LIBERANDO O PERSONAGEM PARA QUE POSSA ENTRAR NA FILA
     for(int i = 0; i < 6; i++){
         if(elenco[i].Nome == people.Nome){
             sem_wait(&mutex);
@@ -70,6 +87,12 @@ void ir_comer(personagem people){
 
 }
 
+
+
+
+/* TROCA DE POSIÇÃO DOIS PERSONAGENS DA FILA PREVIAMENTE INDICADO COMO 'p' E 'e'
+   FUNÇÃO USADA NA ORDENAÇÃO
+*/
 void trocar_people(int p, int e){
     personagem aux;
     aux = fila.fila[p];
@@ -78,14 +101,18 @@ void trocar_people(int p, int e){
     cout << fila.fila[p].Nome << " TROCOU COM " << fila.fila[e].Nome << endl;
 }
 
+
+
+// IMPRIMI QUAM ESTA NA FILA NAQUELE MOMENTO
 void imprimi_fila(){
     for(int i = 0; i < fila.tam; i++)
         cout << fila.fila[i].Nome << endl;
 }
 
+
+
 // o while foi para ter maior controle na hora de interar, ta bem autoexplicativo, se trocar ele volta do inicio dos próximos de p 
-// quando não troca, ele pode continuar, se vc achar um jeito de fazer isso só com for, nem me fala pq eu vou ficar com raiva de mim kkkkkkk
-                        
+// quando não troca, ele pode continuar, se vc achar um jeito de fazer isso só com for, nem me fala pq eu vou ficar com raiva de mim kkkkkkk                     
 void sort_decrescente(){
     personagem aux;
     int p,e;
@@ -133,30 +160,53 @@ void sort_crescente(){
 
 
 
+// REMOVE O PROXIMO DA FILA PARA USAR O MICROWAVE
 void* micro_ondas(void* arg){
+
     personagem aux;
     while(1){
         if (fila.tam != 0){
+            
+
+            // REMOVENDO O PROXIMO DA FILA
             sem_wait(&mutex);
+            sem_wait(&peoples);
             cout << fila.fila[fila.tam-1].Nome << " começa a esquentar algo" << endl;
             fila.tam -= 1;
             aux = fila.fila[fila.tam];
             sleep(1);
-            sem_wait(&peoples);
             sem_post(&mutex);
-            // INDO COMER
+
+
+            // INDO COMER APOS TER USANDO O MICROWAVE
             ir_comer(aux);
+
+
         }
     }
+
     pthread_exit(NULL);
 }
 
+
+
 void add_personagem(){
+
+
+    int valor_rand;
+
+
+    /* PROCURA UM PERSONAGEM DE FORMA ALEATORIA
+       QUE NÃO ESTEJA NA FILA, USANDO O MICROWARE OU COMENDO
+    */
     srand(time(0));
-    int valor_rand; // REPRESENTA A POSIÇÂO DO PEOPLE QUE QUERO
-    while(disp[valor_rand] != 0){
+    do
+    {
         valor_rand = rand()%6;
-    }
+    }while(disp[valor_rand] != 0);
+
+
+    // APÓS ENCONTRADO ALGUEM LIVRE ADICIONA-O NA FILA
     sem_wait(&mutex);
     disp[valor_rand] = 1;
     cout << elenco[valor_rand].Nome << " quer usar o forno" << endl;
@@ -164,6 +214,7 @@ void add_personagem(){
     sem_post(&peoples);
     sort_decrescente();
     sem_post(&mutex);
+    
 }
 
 
