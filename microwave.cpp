@@ -55,6 +55,12 @@ disp dispp[6];
 personagens fila;
 int raj_ver;
 
+
+/*
+	VETOR DOS 6 (SEIS) PERSONAGEM E JUNTO COM OS PERSONAGEM QUE TEM 
+	MAIS PRIORIDADE QUE ELE MESMO, ESSES PERSONAGENS SÃO OS QUE SÃO 
+	APRESENTADOS NO PROBLEMA "The Big Bang Theory".
+*/
 personagem elenco[6] = {{"Sheldon", "Leonard", "Penny"},
                         {"Amy", "Leonard", "Penny"},
                         {"Leonard", "Howard", "Bernadette"},
@@ -63,8 +69,10 @@ personagem elenco[6] = {{"Sheldon", "Leonard", "Penny"},
                         {"Bernadette", "Sheldon", "Amy"},
                         };
 
+
+
 /// ------- DECLARAÇÕES --------------
-void mostrar_fila();
+void imprimi_fila();
 void trocar_people(int p, int e);
 void ir_comer(personagem people);
 personagem remove_personagem();
@@ -73,13 +81,16 @@ void* raj (void* arg);
 void* ver_disp(void* arg);
 void* micro_ondas(void* arg);
 int sort_decrescente();
-void sort_crescente();
 void add_personagem();
-void ir_comer(personagem people);
 /// -----------------------------------
 
 
 
+/*
+	TEM O OBJETIVO DE INFORMAR AO VETOR DE DISPONIBILIDADE "dispp"
+	OS DADOS DO PERSONAGEM COMO DIZER QUE FOI COMER, HORARIO ATUAL
+	E O TEMPO EM (3-6) SEGUNDOS QUE PERMANECERÁ COMENDO. 
+*/
 void ir_comer(personagem people){
 
     // 'valor_rand' RECEBE UM VALOR ALEATORIO ENTRE(3-6)
@@ -91,18 +102,15 @@ void ir_comer(personagem people){
 
 
     // LIBERANDO O PERSONAGEM PARA QUE POSSA ENTRAR NA FILA
-    //sem_wait(&mutex);
     for(int i = 0; i < 6; i++){
         if(elenco[i].Nome == people.Nome){
             dispp[i].segundos = time(&agora);
             dispp[i].tempo = valor_rand;
             dispp[i].disp = 2;
-            //cout << dispp[i].segundos << " : " << dispp[i].tempo << endl;
+
             break;
         }
     }
-    //sem_post(&mutex);
-
     
 }
 
@@ -142,6 +150,7 @@ void trocar_people(int p, int e){
 
 
 
+// REMOVE O PRÓXIMO PERSONAGEM DA FILA
 personagem remove_personagem (){
 	cout << fila.fila[fila.tam-1].Nome << " começa a esquentar algo" << endl;
     fila.tam--;
@@ -158,8 +167,12 @@ void imprimi_fila(){
 
 
 
-// o while foi para ter maior controle na hora de interar, ta bem autoexplicativo, se trocar ele volta do inicio dos próximos de p 
-// quando não troca, ele pode continuar, se vc achar um jeito de fazer isso só com for, nem me fala pq eu vou ficar com raiva de mim kkkkkkk                     
+/*
+	TEM O OBJETIVO DE ORDENAR A FILA DE ACORDO COM SUA PRIORIDADE DE FORMA DECRESCENTE, SENDO O ULTIMO DA FILA O PRÓXIMO 
+	À USAR O MICROWAVE ( FOI FEITO ASSIM PARA FACILITAR A REMOÇÃO ). MAS COMO O PROBLEMA "The Big Bang Theory" MOSTRA,
+	CASO ESTEJA 3 (TRÊS) PERSONAGENS DE PRIORIDADES DIFERENTES NA FILA OCORRE UM LOOP INFINITO, POIS ESTES NÃO ENTRAM
+	EM CONSENSO SOBRE A ORDEM FINAL DE COMO FICARÁ A FILA.
+*/
 int sort_decrescente(){
 
     personagem aux;
@@ -170,10 +183,9 @@ int sort_decrescente(){
         while(e >= 0){
 
 
-
-            // VERIFICA SE A FUNÇÃO 'raj' SETOU 'raj_ver' COM VALOR 2
-            // APÓS, VERIFICA SE HÁ CONFLITO NA FILA, SENDO VERDADE 
-            // 
+            /*  VERIFICA SE A FUNÇÃO 'raj' SETOU 'raj_ver' COM VALOR 2
+            	APÓS, VERIFICA SE HÁ CONFLITO NA FILA, SENDO VERDADE.
+            */
             if (raj_ver == 2){
                 if (raj_identifica() == 1){
 
@@ -202,37 +214,11 @@ int sort_decrescente(){
         }
     p--;
     }
-    
 
     sem_wait(&mutex_raj);
     raj_ver = 0;
     sem_post(&mutex_raj);
     return 1;
-}
-
-
-
-void sort_crescente(){
-    personagem aux;
-    int p,e;
-        p = 0;
-        while(p < fila.tam - 1){
-            e = 1;
-            while(e < fila.tam){
-                if(fila.fila[p].depoisDele == fila.fila[e].Nome || fila.fila[p].depoisDela == fila.fila[e].Nome)
-                {
-                    trocar_people( p, e);
-                    e = p + 1;
-                }
-                else{
-                    //cout << fila.fila[p].Nome << " NAO TROCOU COM " << fila.fila[e].Nome << endl;
-                    e++; 
-                }
-            }
-            p++;
-        }
-    imprimi_fila();
-
 }
 
 
@@ -245,26 +231,19 @@ void* micro_ondas(void* arg){
         if (fila.tam != 0){
             
 
-            // REMOVENDO O PROXIMO DA FILA
-            
             sleep(1);
             sem_wait(&peoples);
             sem_wait(&mutex);
 
+            // REMOVENDO O PROXIMO DA FILA
             aux = remove_personagem ();
 
-            //printf("FOI\n");
             sem_post(&mutex);
 
+            // INDO COMER
             sem_wait(&mutex);
             ir_comer(aux);
             sem_post(&mutex);
-            
-
-
-            // INDO COMER APOS TER USANDO O MICROWAVE
-
-            
 
 
         }
@@ -310,6 +289,7 @@ void* raj(void* arg){
         sem_post(&mutex_raj);
     }
 }
+
 
 
 /*  ADICIONA UM NOVO PERSONAGEM À FILA DE FORMA ALEATÓRIA,
